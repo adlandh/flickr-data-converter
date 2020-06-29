@@ -1,4 +1,4 @@
-package output
+package models
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ type OutputError struct {
 	Err   error
 }
 
-func NewError(album, photo string, err error) OutputError {
+func NewOutputError(album, photo string, err error) OutputError {
 	return OutputError{
 		Album: album,
 		Photo: photo,

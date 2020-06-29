@@ -8,23 +8,23 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/adlandh/flickr-data-converter/src/settings"
+	"github.com/adlandh/flickr-data-converter/src/models"
 )
 
 var validFile = regexp.MustCompile(`photo_[0-9]+.json$`)
 
 type Flickr struct {
-	Settings       settings.Settings `json:"-"`
-	Albums         []Album           `json:"albums"`
-	Photos         map[string]Photo  `json:"-"`
+	settings       models.Settings
+	Albums         models.Albums
+	Photos         models.Photos
 	photoDataFiles []string
 	photoFiles     []string
 }
 
-func New(settings settings.Settings) Flickr {
+func New(settings models.Settings) Flickr {
 	return Flickr{
-		Settings: settings,
-		Photos:   make(map[string]Photo),
+		settings: settings,
+		Photos:   make(models.Photos),
 	}
 }
 
@@ -42,16 +42,20 @@ func (f *Flickr) Parse() error {
 }
 
 func (f *Flickr) parseAlbums() error {
-	albumFile, err := os.Open(f.Settings.Data + string(os.PathSeparator) + AlbumFileName)
+	var albums models.AlbumList
+	albumFile, err := os.Open(f.settings.Data + string(os.PathSeparator) + models.AlbumFileName)
 	if err != nil {
 		return err
 	}
 
 	defer albumFile.Close()
 
-	if err = json.NewDecoder(albumFile).Decode(f); err != nil {
+	if err = json.NewDecoder(albumFile).Decode(&albums); err != nil {
 		return err
 	}
+
+	f.Albums = albums.Albums
+
 	return nil
 }
 
@@ -74,14 +78,14 @@ func (f *Flickr) parsePhotos() error {
 }
 
 func (f *Flickr) getFiles() error {
-	photoDataFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + PhotoDataFiles)
+	photoDataFiles, err := filepath.Glob(f.settings.Data + string(os.PathSeparator) + models.PhotoDataFiles)
 	if err != nil {
 		return err
 	}
 
 	f.photoDataFiles = photoDataFiles
 
-	photoFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + "*_o.jpg")
+	photoFiles, err := filepath.Glob(f.settings.Data + string(os.PathSeparator) + "*_o.jpg")
 	if err != nil {
 		return err
 	}
@@ -91,9 +95,9 @@ func (f *Flickr) getFiles() error {
 	return nil
 }
 
-func (f Flickr) parsePhoto(file string) (Photo, error) {
+func (f Flickr) parsePhoto(file string) (models.Photo, error) {
 
-	var photo Photo
+	var photo models.Photo
 
 	photoFile, err := os.Open(file)
 

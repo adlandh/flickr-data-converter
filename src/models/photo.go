@@ -1,4 +1,4 @@
-package flickr
+package models
 
 const PhotoDataFiles = "photo*"
 
@@ -22,3 +22,5 @@ type Photo struct {
 	} `json:"geo"`
 	FileName string `json:"-"`
 }
+
+type Photos map[string]Photo

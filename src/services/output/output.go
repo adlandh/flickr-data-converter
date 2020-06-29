@@ -5,19 +5,21 @@ import (
 	"io"
 	"os"
 
-	"github.com/adlandh/flickr-data-converter/src/flickr"
+	"github.com/adlandh/flickr-data-converter/src/models"
 )
 
 type Output struct {
-	flickr.Flickr
+	settings models.Settings
+	Albums   models.Albums
+	Photos   models.Photos
 }
 
 func (o Output) Generatefolders() error {
 	for _, album := range o.Albums {
-		albumDir := o.Settings.Output + string(os.PathSeparator) + album.Title
+		albumDir := o.settings.Output + string(os.PathSeparator) + album.Title
 		err := os.Mkdir(albumDir, 0755)
 		if err != nil && !os.IsExist(err) {
-			return NewError(albumDir, "", err)
+			return models.NewOutputError(albumDir, "", err)
 		}
 		for _, photoId := range album.Photos {
 			if photoId == "0" {
@@ -27,7 +29,7 @@ func (o Output) Generatefolders() error {
 			dstFile := albumDir + string(os.PathSeparator) + o.Photos[photoId].Name + ".jpg"
 			_, err := o.copy(srcFile, dstFile)
 			if err != nil {
-				return NewError(albumDir, photoId, err)
+				return models.NewOutputError(albumDir, photoId, err)
 			}
 		}
 	}
@@ -35,9 +37,11 @@ func (o Output) Generatefolders() error {
 	return nil
 }
 
-func New(flickr2 flickr.Flickr) Output {
+func New(settings models.Settings, albums models.Albums, photos models.Photos) Output {
 	return Output{
-		flickr2,
+		settings: settings,
+		Albums:   albums,
+		Photos:   photos,
 	}
 }
 
