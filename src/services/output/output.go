@@ -69,16 +69,16 @@ func (o *Output) generateAlbumFolder(album models.Album) {
 		log.Fatal(models.NewOutputError(albumDir, "", err))
 	}
 
-	for _, photoId := range album.Photos {
-		if photoId == "0" {
+	for _, photoID := range album.Photos {
+		if photoID == "0" {
 			continue
 		}
 
-		srcFile := o.Photos[photoId].FileName
-		dstFile := albumDir + string(os.PathSeparator) + o.Photos[photoId].Name + ".jpg"
+		srcFile := o.Photos[photoID].FileName
+		dstFile := albumDir + string(os.PathSeparator) + o.Photos[photoID].Name + ".jpg"
 		_, err := o.copy(srcFile, dstFile)
 		if err != nil {
-			log.Fatal(models.NewOutputError(albumDir, photoId, err))
+			log.Fatal(models.NewOutputError(albumDir, photoID, err))
 		}
 	}
 }
