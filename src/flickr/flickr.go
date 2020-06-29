@@ -74,7 +74,7 @@ func (f *Flickr) parsePhotos() error {
 }
 
 func (f *Flickr) getFiles() error {
-	photoDataFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + PhotoFIles)
+	photoDataFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + PhotoDataFiles)
 	if err != nil {
 		return err
 	}

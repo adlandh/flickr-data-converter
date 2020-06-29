@@ -1,6 +1,6 @@
 package flickr
 
-const PhotoFIles = "photo*"
+const PhotoDataFiles = "photo*"
 
 type Photo struct {
 	Id           string `json:"id"`
