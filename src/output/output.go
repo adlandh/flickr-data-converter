@@ -23,9 +23,9 @@ func (o Output) Generatefolders() error {
 			if photoId == "0" {
 				continue
 			}
-			srcFile := o.Settings.Data + string(os.PathSeparator) + o.Photos[photoId].FileName
+			srcFile := o.Photos[photoId].FileName
 			dstFile := albumDir + string(os.PathSeparator) + o.Photos[photoId].Name + ".jpg"
-			_, err := Copy(srcFile, dstFile)
+			_, err := o.copy(srcFile, dstFile)
 			if err != nil {
 				return NewError(albumDir, photoId, err)
 			}
@@ -41,7 +41,7 @@ func New(flickr2 flickr.Flickr) Output {
 	}
 }
 
-func Copy(src, dst string) (int64, error) {
+func (o Output) copy(src, dst string) (int64, error) {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
 		return 0, err

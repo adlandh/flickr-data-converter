@@ -2,6 +2,7 @@ package flickr
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -13,9 +14,11 @@ import (
 var validFile = regexp.MustCompile(`photo_[0-9]+.json$`)
 
 type Flickr struct {
-	Settings settings.Settings `json:"-"`
-	Albums   []Album           `json:"albums"`
-	Photos   map[string]Photo  `json:"-"`
+	Settings       settings.Settings `json:"-"`
+	Albums         []Album           `json:"albums"`
+	Photos         map[string]Photo  `json:"-"`
+	photoDataFiles []string
+	photoFiles     []string
 }
 
 func New(settings settings.Settings) Flickr {
@@ -26,16 +29,19 @@ func New(settings settings.Settings) Flickr {
 }
 
 func (f *Flickr) Parse() error {
-	if err := f.ParseAlbums(); err != nil {
+	if err := f.getFiles(); err != nil {
 		return err
 	}
-	if err := f.ParsePhotos(); err != nil {
+	if err := f.parseAlbums(); err != nil {
+		return err
+	}
+	if err := f.parsePhotos(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (f *Flickr) ParseAlbums() error {
+func (f *Flickr) parseAlbums() error {
 	albumFile, err := os.Open(f.Settings.Data + string(os.PathSeparator) + AlbumFileName)
 	if err != nil {
 		return err
@@ -49,19 +55,13 @@ func (f *Flickr) ParseAlbums() error {
 	return nil
 }
 
-func (f *Flickr) ParsePhotos() error {
-
-	photoFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + PhotoFIles)
-	if err != nil {
-		return err
-	}
-
-	for _, file := range photoFiles {
+func (f *Flickr) parsePhotos() error {
+	for _, file := range f.photoDataFiles {
 		if !validFile.MatchString(file) {
 			continue
 		}
 
-		photo, err := f.ParsePhoto(file)
+		photo, err := f.parsePhoto(file)
 
 		if err != nil {
 			return err
@@ -71,10 +71,27 @@ func (f *Flickr) ParsePhotos() error {
 	}
 
 	return nil
-
 }
 
-func (f Flickr) ParsePhoto(file string) (Photo, error) {
+func (f *Flickr) getFiles() error {
+	photoDataFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + PhotoFIles)
+	if err != nil {
+		return err
+	}
+
+	f.photoDataFiles = photoDataFiles
+
+	photoFiles, err := filepath.Glob(f.Settings.Data + string(os.PathSeparator) + "*_o.jpg")
+	if err != nil {
+		return err
+	}
+
+	f.photoFiles = photoFiles
+
+	return nil
+}
+
+func (f Flickr) parsePhoto(file string) (Photo, error) {
 
 	var photo Photo
 
@@ -90,16 +107,19 @@ func (f Flickr) ParsePhoto(file string) (Photo, error) {
 		return photo, err
 	}
 
-	photo.FileName = normalizeFilename(photo.Name) + "_" + photo.Id + "_o.jpg"
-
+	if photo.FileName, err = f.findFilenameById(photo.Id); err != nil {
+		return photo, err
+	}
 	return photo, nil
 }
 
-func normalizeFilename(filename string) string {
-	r := strings.NewReplacer(
-		" ", "-",
-		".", "",
-		"(", "",
-		")", "")
-	return strings.ToLower(r.Replace(filename))
+func (f *Flickr) findFilenameById(id string) (string, error) {
+
+	for _, file := range f.photoFiles {
+		if strings.Contains(file, id) {
+			return file, nil
+		}
+	}
+
+	return "", fmt.Errorf("photo with id %s not found", id)
 }
