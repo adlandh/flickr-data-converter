@@ -31,9 +31,7 @@ func main() {
 
 	outputObject := output.New(mainSettings, flickrData.Albums, flickrData.Photos)
 
-	if err := outputObject.Generatefolders(); err != nil {
-		log.Fatal(err)
-	}
+	outputObject.Generatefolders()
 
 	fmt.Println("All files successfully stored in " + mainSettings.Output)
 }
