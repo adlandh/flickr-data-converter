@@ -90,12 +90,16 @@ func (f Flickr) ParsePhoto(file string) (Photo, error) {
 		return photo, err
 	}
 
-	name := strings.ReplaceAll(photo.Name, " ", "-")
-	name = strings.ReplaceAll(name, ".", "")
-	name = strings.ReplaceAll(name, "(", "")
-	name = strings.ReplaceAll(name, ")", "")
-
-	photo.FileName = strings.ToLower(name) + "_" + photo.Id + "_o.jpg"
+	photo.FileName = normalizeFilename(photo.Name) + "_" + photo.Id + "_o.jpg"
 
 	return photo, nil
+}
+
+func normalizeFilename(filename string) string {
+	r := strings.NewReplacer(
+		" ", "-",
+		".", "",
+		"(", "",
+		")", "")
+	return strings.ToLower(r.Replace(filename))
 }
