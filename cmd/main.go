@@ -18,7 +18,10 @@ func main() {
 	flag.StringVar(&outputFolder, "output", "."+string(os.PathSeparator)+"output", "Full path to	output folder")
 	flag.Parse()
 
-	mainSettings := models.New(dataFolder, outputFolder)
+	mainSettings := &models.Settings{
+		Data:   dataFolder,
+		Output: outputFolder,
+	}
 
 	flickrData := flickr.New(mainSettings)
 

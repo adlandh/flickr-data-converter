@@ -14,14 +14,14 @@ import (
 var validFile = regexp.MustCompile(`photo_[0-9]+.json$`)
 
 type Flickr struct {
-	settings       models.Settings
+	settings       *models.Settings
 	Albums         models.Albums
 	Photos         models.Photos
 	photoDataFiles []string
 	photoFiles     []string
 }
 
-func New(settings models.Settings) Flickr {
+func New(settings *models.Settings) Flickr {
 	return Flickr{
 		settings: settings,
 		Photos:   make(models.Photos),

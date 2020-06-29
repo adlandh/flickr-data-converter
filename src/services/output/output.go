@@ -9,7 +9,7 @@ import (
 )
 
 type Output struct {
-	settings models.Settings
+	settings *models.Settings
 	Albums   models.Albums
 	Photos   models.Photos
 }
@@ -37,7 +37,7 @@ func (o Output) Generatefolders() error {
 	return nil
 }
 
-func New(settings models.Settings, albums models.Albums, photos models.Photos) Output {
+func New(settings *models.Settings, albums models.Albums, photos models.Photos) Output {
 	return Output{
 		settings: settings,
 		Albums:   albums,
